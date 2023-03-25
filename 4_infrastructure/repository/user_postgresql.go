@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"github.com/TarasTarkovskyi/CRUD-6-template/1_entity"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/1_entity"
 	"time"
 )
 

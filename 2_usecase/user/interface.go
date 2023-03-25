@@ -1,6 +1,6 @@
 package user
 
-import entity "github.com/TarasTarkovskyi/CRUD-6-template/1_entity"
+import entity "github.com/TarasTarkovskyi/crud-3-clean-architecture/1_entity"
 
 type Repository interface {
 	Create(user *entity.User) error

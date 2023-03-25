@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/TarasTarkovskyi/CRUD-6-template/2_usecase/user"
-	"github.com/TarasTarkovskyi/CRUD-6-template/3_api/handler"
-	"github.com/TarasTarkovskyi/CRUD-6-template/4_infrastructure/repository"
-	"github.com/TarasTarkovskyi/CRUD-6-template/5_pkg/database"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/user"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/3_api/handler"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/4_infrastructure/repository"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/5_pkg/database"
 	_ "github.com/lib/pq"
 	"net/http"
 )

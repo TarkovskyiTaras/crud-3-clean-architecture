@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/TarasTarkovskyi/CRUD-6-template/1_entity"
-	"github.com/TarasTarkovskyi/CRUD-6-template/2_usecase/user"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/1_entity"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/user"
 	"github.com/gorilla/mux"
 	"io"
 	"net/http"

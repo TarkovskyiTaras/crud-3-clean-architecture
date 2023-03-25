@@ -1,9 +1,8 @@
-module github.com/TarasTarkovskyi/CRUD-6-template
+module github.com/TarasTarkovskyi/crud-3-clean-architecture
 
 go 1.19
 
 require (
-	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.7
 )
