@@ -26,8 +26,18 @@ func (u *UserPostgreSQL) GetByID(id int) (*entity.User, error) {
 	err := u.db.QueryRow("SELECT id, first_name, last_name, dob, location, cellphone_number, email, password, created_at, updated_at FROM users WHERE id = $1", id).
 		Scan(&user.ID, &user.FirstName, &user.LastName, &user.DOB, &user.Location, &user.CellPhoneNumber, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
 	if err == sql.ErrNoRows {
-		return nil, entity.ErrUserNotFound
+		return nil, entity.ErrNotFound
 	}
+
+	//new code
+	rows, _ := u.db.Query("SELECT id_book FROM users_books WHERE id_user = $1", id)
+	for rows.Next() {
+		var i int
+		rows.Scan(&i)
+		user.Books = append(user.Books, i)
+	}
+	//end of new code
+
 	return &user, err
 }
 
@@ -45,6 +55,18 @@ func (u *UserPostgreSQL) GetAll() ([]*entity.User, error) {
 		}
 		users = append(users, &user)
 	}
+
+	//new code
+	for _, user := range users {
+		rows, _ = u.db.Query("SELECT id_book FROM users_books WHERE id_user = $1", user.ID)
+		for rows.Next() {
+			var b int
+			rows.Scan(&b)
+			user.Books = append(user.Books, b)
+		}
+	}
+	//end of new code
+
 	return users, nil
 }
 
@@ -55,13 +77,20 @@ func (u *UserPostgreSQL) Update(user *entity.User) error {
 		return err
 	}
 
+	//new code
+	u.db.Exec("DELETE FROM users_books WHERE id_user = $1", user.ID)
+	for _, bookId := range user.Books {
+		u.db.Exec("INSERT INTO users_books (id_user, id_book) VALUES($1, $2)", user.ID, bookId)
+	}
+	//end of new code
+
 	rowsAff, err := res.RowsAffected()
 	if err != nil {
 		return err
 	}
 
 	if rowsAff != 1 {
-		err = fmt.Errorf("weird behavior, total rows affected = %d", rowsAff)
+		return fmt.Errorf("weird behavior, total rows affected = %d", rowsAff)
 	}
 
 	return nil
@@ -79,8 +108,7 @@ func (u *UserPostgreSQL) Delete(id int) error {
 	}
 
 	if rowsAff != 1 {
-		err = fmt.Errorf("weird behavior, total rows affected = %d", rowsAff)
-		return err
+		return fmt.Errorf("weird behavior, total rows affected = %d", rowsAff)
 	}
 
 	return nil

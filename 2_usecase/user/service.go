@@ -9,13 +9,13 @@ type Users struct {
 	repo Repository
 }
 
-func NewService(p Repository) *Users {
-	return &Users{p}
+func NewService(repo Repository) *Users {
+	return &Users{repo: repo}
 }
 
 func (u *Users) CreateUser(e *entity.User) error {
 	_, err := u.repo.GetByID(e.ID)
-	if err != entity.ErrUserNotFound {
+	if err != entity.ErrNotFound {
 		return entity.ErrConflict
 	}
 

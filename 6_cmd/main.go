@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/book"
+	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/loan"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/user"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/3_api/handler"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/4_infrastructure/repository"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/5_pkg/database"
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"log"
 	"net/http"
 )
 
@@ -19,12 +23,27 @@ func main() {
 
 	userRepo := repository.NewUsers(db)
 	userService := user.NewService(userRepo)
-	userHandler := handler.NewHandler(userService)
+	userHandler := handler.NewUserHandler(userService)
 
-	server := http.Server{
+	bookRepo := repository.NewBooks(db)
+	bookService := book.NewService(bookRepo)
+	bookHandler := handler.NewBookHandler(bookService)
+
+	loanService := loan.NewLoan(userService, bookService)
+	loanHandler := handler.NewLoanHandler(loanService)
+
+	r := mux.NewRouter()
+	userHandler.MakeUserHandler(r)
+	bookHandler.MakeBookHandler(r)
+	loanHandler.MakeLoanHandler(r)
+
+	serv := http.Server{
 		Addr:    ":8080",
-		Handler: userHandler.InitRouter(),
+		Handler: r,
 	}
 
-	server.ListenAndServe()
+	err = serv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
