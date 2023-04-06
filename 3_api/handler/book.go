@@ -56,7 +56,7 @@ func (h *BookHandler) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *BookHandler) GetHandler(w http.ResponseWriter, r *http.Request) {
+func (h *BookHandler) GetByIDHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -167,7 +167,7 @@ func (h *BookHandler) DeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *BookHandler) MakeBookHandler(r *mux.Router) {
 	r.HandleFunc("/book", h.CreateHandler).Methods(http.MethodPost)
-	r.HandleFunc("/book/{id:[0-9]+}", h.GetHandler).Methods(http.MethodGet)
+	r.HandleFunc("/book/{id:[0-9]+}", h.GetByIDHandler).Methods(http.MethodGet)
 	r.HandleFunc("/book", h.GetAllHandler).Methods(http.MethodGet)
 	r.HandleFunc("/book", h.UpdateHandler).Methods(http.MethodPut)
 	r.HandleFunc("/book/{id:[0-9]+}", h.DeleteHandler).Methods(http.MethodDelete)

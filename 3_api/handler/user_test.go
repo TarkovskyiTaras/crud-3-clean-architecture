@@ -3,9 +3,10 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	entity "github.com/TarasTarkovskyi/crud-3-clean-architecture/1_entity"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/user/custom_mocks"
-	mock_user "github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/user/mocks"
+	umock "github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/user/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -18,23 +19,23 @@ import (
 	"time"
 )
 
-type Want struct {
+type wantUser struct {
 	err        error
 	statusCode int
 }
 
-type UserTest struct {
-	userS *entity.User
-	userJ string
-	want  Want
+type userTest struct {
+	id   int
+	user string
+	want wantUser
 }
 
-func TestCreateHandler(t *testing.T) {
+func TestCreateUserHandler(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	m := mock_user.NewMockUseCase(controller)
+	m := umock.NewMockUseCase(controller)
 	h := NewUserHandler(m)
 	r := mux.NewRouter()
 	h.MakeUserHandler(r)
@@ -42,36 +43,37 @@ func TestCreateHandler(t *testing.T) {
 	testServ := httptest.NewServer(r)
 	defer testServ.Close()
 
-	u1 := &entity.User{ID: 1, FirstName: "Peter", LastName: "Anderson", DOB: time.Date(1990, time.January, 15, 0, 0, 0, 0, time.UTC), Location: "Canada", CellPhoneNumber: "+16479150167", Email: "Peter@gmail.com", Password: "qwerty12345"}
-	u2 := &entity.User{}
-	u3 := &entity.User{ID: 1, FirstName: "Peter", LastName: "Anderson", DOB: time.Date(1990, time.January, 15, 0, 0, 0, 0, time.UTC), Location: "Canada", CellPhoneNumber: "+16479150167", Email: "Peter@gmail.com", Password: "qwerty12345"}
+	u1 := `{"id":1,"first_name":"Peter","last_name":"Anderson","dob":"1990-01-15T00:00:00Z","location":"Canada","cellphone_number":"+16479150167","email":"Peter@gmail.com","password":"qwerty12345"}`
+	u2 := `{"id":3,"first_name":"","last_name":"","dob":"0001-01-01T00:00:00Z","location":"","cellphone_number":"","email":"","password":""}`
+	u3 := `{"id":1,"first_name":"Peter","last_name":"Anderson","dob":"1990-01-15T00:00:00Z","location":"Canada","cellphone_number":"+16479150167","email":"Peter@gmail.com","password":"qwerty12345"}`
 
-	tests := []UserTest{
-		{userS: u1, want: Want{err: nil, statusCode: http.StatusCreated}},
-		{userS: u2, want: Want{err: entity.ErrInvalidEntity, statusCode: http.StatusUnprocessableEntity}},
-		{userS: u3, want: Want{err: entity.ErrConflict, statusCode: http.StatusConflict}},
+	tests := []userTest{
+		{user: u1, want: wantUser{err: nil, statusCode: http.StatusCreated}},
+		{user: u2, want: wantUser{err: entity.ErrInvalidEntity, statusCode: http.StatusUnprocessableEntity}},
+		{user: u3, want: wantUser{err: entity.ErrConflict, statusCode: http.StatusConflict}},
 	}
 
 	for _, ut := range tests {
-		m.EXPECT().CreateUser(ut.userS).Return(ut.want.err)
-
-		userJson, err := json.Marshal(ut.userS)
-		assert.NoError(t, err)
-		reqBody := bytes.NewReader(userJson)
-		resp, err := http.Post(testServ.URL+"/user", "application/json", reqBody)
+		var userUnmarshalled entity.User
+		err := json.Unmarshal([]byte(ut.user), &userUnmarshalled)
 		assert.NoError(t, err)
 
-		assert.Equal(t, resp.StatusCode, ut.want.statusCode)
+		m.EXPECT().CreateUser(&userUnmarshalled).Return(ut.want.err)
+
+		resp, err := http.Post(testServ.URL+"/user", "application/json", strings.NewReader(ut.user))
+		assert.NoError(t, err)
+
+		assert.Equal(t, ut.want.statusCode, resp.StatusCode)
 	}
 
 }
 
-func TestGetByIDHandler(t *testing.T) {
+func TestGetByIDUserHandler(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	m := mock_user.NewMockUseCase(controller)
+	m := umock.NewMockUseCase(controller)
 	h := NewUserHandler(m)
 	r := mux.NewRouter()
 	h.MakeUserHandler(r)
@@ -93,16 +95,37 @@ func TestGetByIDHandler(t *testing.T) {
 
 	assert.NotNil(t, resUser)
 	assert.Equal(t, expUser.ID, resUser.ID)
-	assert.Equal(t, resp.StatusCode, http.StatusOK)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 }
 
-func TestUpdateByIDHandler(t *testing.T) {
+func TestGetAllUsersHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	m := umock.NewMockUseCase(controller)
+	h := NewUserHandler(m)
+	r := mux.NewRouter()
+	h.MakeUserHandler(r)
+
+	users := []*entity.User{{ID: 1}, {ID: 2}, {ID: 3}}
+
+	m.EXPECT().GetAllUsers().Return(users, nil)
+
+	testServ := httptest.NewServer(r)
+	defer testServ.Close()
+
+	resp, _ := http.Get(testServ.URL + "/user")
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestUpdateByIDUserHandler(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	m := mock_user.NewMockUseCase(controller)
+	m := umock.NewMockUseCase(controller)
 	h := NewUserHandler(m)
 	r := mux.NewRouter()
 	h.MakeUserHandler(r)
@@ -114,20 +137,52 @@ func TestUpdateByIDHandler(t *testing.T) {
 	u2 := `{"id":2,"first_name":"Peter","last_name":"Anderson","dob":"1990-01-15T00:00:00Z","location":"Canada","cellphone_number":"+16479150167","email":"Peter@gmail.com","password":"qwerty12345"}`
 	u3 := `{"id":3,"first_name":"","last_name":"","dob":"0001-01-01T00:00:00Z","location":"","cellphone_number":"","email":"","password":""}`
 
-	tests := []UserTest{
-		{userJ: u1, want: Want{err: nil, statusCode: http.StatusOK}},
-		{userJ: u2, want: Want{err: entity.ErrNotFound, statusCode: http.StatusNotFound}},
-		{userJ: u3, want: Want{err: entity.ErrInvalidEntity, statusCode: http.StatusUnprocessableEntity}},
+	tests := []userTest{
+		{user: u1, want: wantUser{err: nil, statusCode: http.StatusOK}},
+		{user: u2, want: wantUser{err: entity.ErrNotFound, statusCode: http.StatusNotFound}},
+		{user: u3, want: wantUser{err: entity.ErrInvalidEntity, statusCode: http.StatusUnprocessableEntity}},
 	}
 
 	for _, ut := range tests {
 		var userUnmarshalled entity.User
-		err := json.Unmarshal([]byte(ut.userJ), &userUnmarshalled)
+		err := json.Unmarshal([]byte(ut.user), &userUnmarshalled)
 		assert.NoError(t, err)
 
 		m.EXPECT().UpdateUser(&userUnmarshalled).Return(ut.want.err)
 
-		req, err := http.NewRequest(http.MethodPut, testServ.URL+"/user", strings.NewReader(ut.userJ))
+		req, err := http.NewRequest(http.MethodPut, testServ.URL+"/user", strings.NewReader(ut.user))
+		assert.NoError(t, err)
+		client := http.DefaultClient
+		resp, err := client.Do(req)
+		assert.NoError(t, err)
+
+		assert.Equal(t, ut.want.statusCode, resp.StatusCode)
+	}
+
+}
+
+func TestDeleteByIDUserHandler(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	m := umock.NewMockUseCase(controller)
+	h := NewUserHandler(m)
+	r := mux.NewRouter()
+	h.MakeUserHandler(r)
+
+	tests := []userTest{
+		{id: 1, want: wantUser{err: nil, statusCode: http.StatusOK}},
+		{id: 2, want: wantUser{err: entity.ErrNotFound, statusCode: http.StatusNotFound}},
+		{id: 3, want: wantUser{err: errors.New("some internal server error"), statusCode: http.StatusInternalServerError}},
+	}
+
+	testServ := httptest.NewServer(r)
+	defer testServ.Close()
+
+	for _, ut := range tests {
+		m.EXPECT().DeleteUser(ut.id).Return(ut.want.err)
+
+		req, err := http.NewRequest(http.MethodDelete, testServ.URL+"/user/"+strconv.Itoa(ut.id), nil)
 		assert.NoError(t, err)
 		client := http.DefaultClient
 		resp, err := client.Do(req)
@@ -172,10 +227,11 @@ func TestGetByIDHandler1(t *testing.T) {
 }
 
 func TestGetByIDHandler2(t *testing.T) {
+
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	m := mock_user.NewMockUseCase(controller)
+	m := umock.NewMockUseCase(controller)
 	h := NewUserHandler(m)
 	r := mux.NewRouter()
 	h.MakeUserHandler(r)
@@ -194,7 +250,7 @@ func TestGetByIDHandler2(t *testing.T) {
 		t.Errorf("userS ID wanted = %d, got = %d", u1.ID, u2.ID)
 	}
 	if writer.Code != http.StatusOK {
-		t.Errorf("http status wanted = %v, got = %v", http.StatusOK, writer.Code)
+		t.Errorf("http statusCode wanted = %v, got = %v", http.StatusOK, writer.Code)
 	}
 }
 
@@ -203,7 +259,7 @@ func TestCreateHandler1(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	m := mock_user.NewMockUseCase(controller)
+	m := umock.NewMockUseCase(controller)
 	h := NewUserHandler(m)
 	r := mux.NewRouter()
 	h.MakeUserHandler(r)
