@@ -50,6 +50,8 @@ func TestCreateUser_Success(t *testing.T) {
 		m.EXPECT().Create(ut.user).Return(ut.want.errFromCreate)
 
 		errGot := u.CreateUser(ut.user)
+
+		assert.NotEqual(t, time.Now(), ut.user.CreatedAt)
 		assert.Equal(t, ut.want.errFinal, errGot)
 	}
 }
