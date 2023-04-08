@@ -6,7 +6,8 @@ import (
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/loan"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/2_usecase/user"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/3_api/handler"
-	"github.com/TarasTarkovskyi/crud-3-clean-architecture/4_infrastructure/repository"
+	repositoryBook "github.com/TarasTarkovskyi/crud-3-clean-architecture/4_infrastructure/repository/book"
+	repositoryUser "github.com/TarasTarkovskyi/crud-3-clean-architecture/4_infrastructure/repository/user"
 	"github.com/TarasTarkovskyi/crud-3-clean-architecture/5_pkg/database"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -21,11 +22,11 @@ func main() {
 	}
 	defer db.Close()
 
-	userRepo := repository.NewUsers(db)
+	userRepo := repositoryUser.NewUsers(db)
 	userService := user.NewService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	bookRepo := repository.NewBooks(db)
+	bookRepo := repositoryBook.NewBooks(db)
 	bookService := book.NewService(bookRepo)
 	bookHandler := handler.NewBookHandler(bookService)
 

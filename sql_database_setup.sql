@@ -11,7 +11,7 @@ CREATE TABLE users (
     id INT,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
-    dob  DATE,
+    dob  TIMESTAMP,
     location VARCHAR(50),
     cellphone_number VARCHAR(50),
     email VARCHAR(50),
@@ -35,3 +35,4 @@ CREATE TABLE users_books (
     id_user INTEGER,
     id_book INTEGER
 );
+
