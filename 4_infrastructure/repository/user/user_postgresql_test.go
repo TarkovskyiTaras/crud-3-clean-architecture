@@ -35,6 +35,10 @@ func setUp() {
 	var initialUser = &entity.User{ID: 1, FirstName: "Taras", LastName: "Tarkovskyi", DOB: time.Date(1992, 01, 23, 0, 0, 0, 0, time.UTC), Location: "Ukraine", CellPhoneNumber: "0933115485", Email: "taras6317492@gmail.com", Password: "12345qwerty", Books: []int{1, 2, 3}}
 
 	userRepo := NewUsers(db)
+	_, err = userRepo.db.Exec("DELETE FROM users")
+	if err != nil {
+		log.Fatal(err)
+	}
 	_, err = userRepo.db.Exec("INSERT INTO users (id, first_name, last_name, dob, location, cellphone_number, email, password, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
 		initialUser.ID, initialUser.FirstName, initialUser.LastName, initialUser.DOB, initialUser.Location, initialUser.CellPhoneNumber, initialUser.Email, initialUser.Password, time.Time{}, time.Time{})
 	if err != nil {

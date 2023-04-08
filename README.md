@@ -2,12 +2,26 @@
 
 ## API:
 
-- **GET** http://localhost:8080/person/1
-- **GET** http://localhost:8080/person
-- **POST** http://localhost:8080/person {"id" : 1, "first_name" : "Taras", "last_name" : "Tarkovskyi", "dob" : "1992-01-23T00:00:00Z", "home_address" : "Kyiv", "cellphone" : "0933115485"}
-- **PUT** http://localhost:8080/person/1 {"id" : 1, "cellphone" : "000000000"}
-- **DELETE** http://localhost:8080/person/1
+### User:
+- **GET** http://localhost:8080/user/1
+- **GET** http://localhost:8080/user
+- **POST** http://localhost:8080/user {"id":1,"first_name":"Jonathan","last_name":"Adams","dob":"1987-03-21T00:00:00Z","location":"USA","cellphone_number":"+16479250145","email":"Jonathan@gmail.com","password":"pw124567"}
+  - curl -i -X POST -H "Content-Type: application/json" -d '{"id":1,"first_name":"Jonathan","last_name":"Adams","dob":"1987-03-21T00:00:00Z","location":"USA","cellphone_number":"+16479250145","email":"Jonathan@gmail.com","password":"pw124567"}' "127.0.0.1:8080/user"
+- **PUT** http://localhost:8080/user {"id":1,"first_name":"UPD_Jonathan","last_name":"UPD_Adams","dob":"1987-03-21T00:00:00Z","location":"USA","cellphone_number":"+16479250145","email":"Jonathan@gmail.com","password":"pw124567"}
+  - curl -i -X PUT -H "Content-Type: application/json" -d '{"id":1,"first_name":"UPD_Jonathan","last_name":"UPD_Adams","dob":"1987-03-21T00:00:00Z","location":"USA","cellphone_number":"+16479250145","email":"Jonathan@gmail.com","password":"pw124567"}' "127.0.0.1:8080/user"
+- **DELETE** http://localhost:8080/user/1
+  - curl -i -X DELETE "127.0.0.1:8080/user/1"
 
-## Docker:
+### Book:
+- **GET** http://localhost:8080/book/1
+- **GET** http://localhost:8080/book
+- **POST** http://localhost:8080/book {"id" : 1,"tittle" : "Handbook of Steel Construction","author" : "CISC ICCA","pages" : 290,"quantity" : 10}
+  - curl -i -X POST -H "Content-Type: application/json" -d '{"id" : 1,"tittle" : "Handbook of Steel Construction","author" : "CISC ICCA","pages" : 290,"quantity" : 10}' "127.0.0.1:8080/book"
+- **PUT** http://localhost:8080/book {"id" : 1,"tittle" : "UPD_Handbook of Steel Construction","author" : "UPD_CISC ICCA","pages" : 290,"quantity" : 10}
+  - curl -i -X PUT -H "Content-Type: application/json" -d '{"id" : 1,"tittle" : "UPD_Handbook of Steel Construction","author" : "UPD_CISC ICCA","pages" : 290,"quantity" : 10}' "127.0.0.1:8080/book"
+- **DELETE** http://localhost:8080/book/1
+  - curl -i -X DELETE "127.0.0.1:8080/book/1"
 
-- **$ docker container run --name crud-6-cont --publish 8080:8080 tarkovskyit/crud-docker-image-db-map**  - the app in the image is set to work with the go's map database (no postgres)
+### Loan:
+- **GET** http://localhost:8080/loan/borrow/1/1
+- **GET** http://localhost:8080/loan/return/1/1

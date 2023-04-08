@@ -34,6 +34,10 @@ func setUp() {
 	}
 	initialBook := &entity.Book{ID: 1, Tittle: "Concrete Design Handbook", Author: "Tarkovskyi T", Pages: 290, Quantity: 5}
 
+	_, err = db.Exec("DELETE FROM books")
+	if err != nil {
+		log.Fatal(err)
+	}
 	_, err = db.Exec("INSERT INTO books (id, tittle, author, pages, quantity, created_at, updated_at) VALUES($1,$2,$3,$4,$5,$6,$7)",
 		initialBook.ID, initialBook.Tittle, initialBook.Author, initialBook.Pages, initialBook.Quantity, time.Time{}, time.Time{})
 	if err != nil {
